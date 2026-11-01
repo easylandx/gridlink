@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#ffffff">
+<script>
+(function(){try{var m=localStorage.getItem('gridlink-theme');if(m!=='amber'&&m!=='green')m='color';
+var h=document.documentElement;h.setAttribute('data-theme',m);if(m!=='color')h.classList.add('mono');
+if(m!=='color'){var t=document.querySelector('meta[name="theme-color"]');if(t)t.setAttribute('content','#000000');}}catch(e){}})();
+</script>
 <meta name="Title" content="🤗 GridLink @gridlink">
 <meta name="Keywords" content="gridlink link paniaguai portal start grid link google point click">
 <base target="_blank">
@@ -213,6 +218,52 @@ body{
 }
 .install-tip.show{opacity:1;transform:translate(-50%,0)}
 @media(max-width:420px){.install{padding-left:14px;padding-right:14px;gap:6px}}
+
+/* ---------- Display modes: Color / Phosphor amber / Phosphor green ---------- */
+.theme-row{display:flex;justify-content:center;padding-top:14px}
+.theme-btn{gap:10px;padding-left:20px;padding-right:20px}
+.theme-btn .sw{width:14px;height:14px;border-radius:50%;flex:none;
+  background:linear-gradient(135deg,var(--cyan),var(--violet))}
+@media(max-width:420px){.theme-btn{padding-left:16px;padding-right:16px;gap:8px}}
+
+html[data-theme="amber"]{--ph:#ffb000;--ph-rgb:255,176,0;--phos-filter:url(#phos-amber)}
+html[data-theme="green"]{--ph:#33ff33;--ph-rgb:51,255,51;--phos-filter:url(#phos-green)}
+html.mono{
+  --ink:var(--ph);--cyan:var(--ph);--violet:var(--ph);
+  --line:rgba(var(--ph-rgb),.38);--tile-a:#000;--tile-b:#000;
+  color-scheme:dark;background:#000;
+}
+html.mono body{
+  background-color:#000;
+  background-image:
+    radial-gradient(60% 40% at 15% 0%,rgba(var(--ph-rgb),.10),transparent 70%),
+    radial-gradient(55% 40% at 90% 8%,rgba(var(--ph-rgb),.07),transparent 70%),
+    linear-gradient(rgba(var(--ph-rgb),.06) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(var(--ph-rgb),.06) 1px,transparent 1px);
+}
+html.mono .cell{box-shadow:0 0 16px -10px var(--ph);text-shadow:0 0 8px rgba(var(--ph-rgb),.45)}
+html.mono .cell::before{background:var(--ph)}
+html.mono .cell::after{background:linear-gradient(100deg,transparent,rgba(var(--ph-rgb),.2),transparent)}
+html.mono .cell img{filter:var(--phos-filter)}
+html.mono .empty{box-shadow:none;text-shadow:none}
+html.mono .pill,html.mono .sound,html.mono .install-tip{
+  background:linear-gradient(#000,#000) padding-box,linear-gradient(120deg,var(--ph),var(--ph)) border-box;
+  box-shadow:0 0 14px -8px var(--ph);text-shadow:0 0 8px rgba(var(--ph-rgb),.45);
+}
+html.mono .theme-btn .sw{background:var(--ph);box-shadow:0 0 8px var(--ph)}
+html.mono .banner-link{background:#000;border:1px solid var(--line);box-shadow:0 0 18px -12px var(--ph)}
+html.mono .banner-bg{filter:var(--phos-filter) blur(18px)}
+html.mono .banner-img{filter:var(--phos-filter)}
+html.mono .banner-next{color:var(--ph);background:rgba(0,0,0,.85);border:1px solid var(--line);box-shadow:0 0 10px -2px var(--ph)}
+html.mono .banner-next::before{border-color:var(--ph)}
+html.mono .banner-next:hover{background:var(--ph);color:#000}
+html.mono .wide:not(.banner){filter:invert(1) var(--phos-filter)}
+@media(hover:hover){
+  html.mono .pill:hover,html.mono .sound:hover{box-shadow:0 0 18px -4px var(--ph)}
+  html.mono .cell:hover{box-shadow:0 0 22px -6px var(--ph),0 0 0 3px rgba(var(--ph-rgb),.10)}
+  html.mono .cell:hover img{filter:var(--phos-filter) drop-shadow(0 0 8px rgba(var(--ph-rgb),.7))}
+  html.mono .banner-link:hover{box-shadow:0 0 24px -8px var(--ph)}
+}
 </style>
 </head>
 
@@ -297,7 +348,52 @@ body{
     </button>
   </div>
 
+  <div class="theme-row">
+    <button class="pill theme-btn" id="themeBtn" type="button" title="Switch display mode">
+      <span class="sw" aria-hidden="true"></span><span class="theme-label">Color</span>
+    </button>
+  </div>
+
 </div>
+
+<!-- Phosphor filters: luminance -> amber / green (used by the monochrome modes) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <filter id="phos-amber" color-interpolation-filters="sRGB">
+      <feColorMatrix type="matrix" values="0.170 0.572 0.058 0 0.20  0.117 0.395 0.040 0 0.138  0 0 0 0 0  0 0 0 1 0"/>
+    </filter>
+    <filter id="phos-green" color-interpolation-filters="sRGB">
+      <feColorMatrix type="matrix" values="0.034 0.114 0.012 0 0.04  0.170 0.572 0.058 0 0.20  0.034 0.114 0.012 0 0.04  0 0 0 1 0"/>
+    </filter>
+  </defs>
+</svg>
+
+<script>
+(function(){
+  var modes=['color','amber','green'];
+  var names={color:'Color',amber:'Amber',green:'Green'};
+  var btn=document.getElementById('themeBtn');
+  var label=btn.querySelector('.theme-label');
+  var meta=document.querySelector('meta[name="theme-color"]');
+  var html=document.documentElement;
+  var cur=html.getAttribute('data-theme');
+  if(modes.indexOf(cur)<0) cur='color';
+
+  function apply(m){
+    cur=m;
+    html.setAttribute('data-theme',m);
+    html.classList.toggle('mono',m!=='color');
+    label.textContent=names[m];
+    btn.setAttribute('aria-label','Display mode: '+names[m]+'. Tap to switch.');
+    if(meta) meta.setAttribute('content',m==='color'?'#ffffff':'#000000');
+    try{ localStorage.setItem('gridlink-theme',m); }catch(e){}
+  }
+  apply(cur);
+  btn.addEventListener('click',function(){
+    apply(modes[(modes.indexOf(cur)+1)%modes.length]);
+  });
+})();
+</script>
 
 <script>
 (function(){
